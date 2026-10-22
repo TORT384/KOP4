@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 **/obj/**
 **/bin/**
+**/obj/**
+**/bin/**

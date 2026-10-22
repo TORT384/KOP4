@@ -3,8 +3,6 @@ import DashboardContainer from './containers/DashboardContainer';
 
 export default function App() {
   const [theme, setTheme] = useState('light');
-  const [minPopulation, setMinPopulation] = useState(0);
-
   const isDark = theme === 'dark';
 
   return (
@@ -12,8 +10,6 @@ export default function App() {
       isDark={isDark}
       theme={theme}
       setTheme={setTheme}
-      minPopulation={minPopulation}
-      setMinPopulation={setMinPopulation}
     />
   );
 }

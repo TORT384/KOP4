@@ -1,21 +1,18 @@
 import React from 'react';
 import KpiCard from './KpiCard';
-import PopulationStepper from './PopulationStepper';
 import ThemeToggle from './ThemeToggle';
+import FilterPanel from './FilterPanel';
 
 export default function DashboardView({
   isDark,
   theme,
   setTheme,
-  minPopulation,
-  setMinPopulation,
-  isLoading,
-  error,
-  kpis,
-  countries,
-  sortKey,
-  sortOrder,
-  onSort,
+  isLoading = false,
+  error = null,
+  kpis = [],
+  countries = [],
+  initialFilters,
+  onFilterChange,
 }) {
   const styles = {
     container: {
@@ -28,7 +25,7 @@ export default function DashboardView({
     },
     header: {
       display: 'flex',
-      justifyContent: 'space-between',
+      justifyContent: 'space-between', // Виправлено значення
       alignItems: 'center',
       marginBottom: '24px',
     },
@@ -38,31 +35,6 @@ export default function DashboardView({
       gap: '16px',
       marginBottom: '24px',
     },
-    controls: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: '16px',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '24px',
-      padding: '16px',
-      backgroundColor: isDark ? '#2a2a2a' : '#ffffff',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    },
-    sortGroup: {
-      display: 'flex',
-      gap: '8px',
-      alignItems: 'center',
-    },
-    button: (active) => ({
-      padding: '6px 12px',
-      cursor: 'pointer',
-      borderRadius: '4px',
-      border: '1px solid #ccc',
-      backgroundColor: active ? (isDark ? '#4a4a4a' : '#e0e0e0') : isDark ? '#333' : '#fff',
-      color: isDark ? '#fff' : '#000',
-    }),
     table: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -87,11 +59,6 @@ export default function DashboardView({
     },
   };
 
-  const getSortIcon = (key) => {
-    if (sortKey !== key) return '↕';
-    return sortOrder === 'asc' ? '↑' : '↓';
-  };
-
   return (
     <div style={styles.container}>
       <header style={styles.header}>
@@ -99,44 +66,33 @@ export default function DashboardView({
         <ThemeToggle theme={theme} setTheme={setTheme} />
       </header>
 
-      {/* Живі KPI */}
+      {/* Панель фільтрів */}
+      <FilterPanel
+        initialValues={initialFilters}
+        onFilterChange={onFilterChange}
+        isDark={isDark}
+      />
+
+      {/* Динамічні KPI */}
       <section style={styles.kpiGrid}>
-        {kpis.length > 0
-          ? kpis.map((kpi) => (
-              <KpiCard key={kpi.id} title={kpi.title} value={kpi.value} isDark={isDark} />
-            ))
-          : [1, 2, 3].map((id) => (
-              <KpiCard key={id} title="Завантаження..." value="..." isDark={isDark} />
-            ))}
+        {isLoading ? (
+          [1, 2, 3].map((id) => (
+            <KpiCard key={id} title="Завантаження..." value="..." isDark={isDark} />
+          ))
+        ) : kpis.length > 0 ? (
+          kpis.map((kpi) => (
+            <KpiCard key={kpi.id || kpi.title} title={kpi.title} value={kpi.value} isDark={isDark} />
+          ))
+        ) : (
+          <KpiCard title="Знайдено країн" value="0" isDark={isDark} />
+        )}
       </section>
 
-      {/* Панель фільтрів та сортування */}
-      <section style={styles.controls}>
-        <PopulationStepper
-          minPopulation={minPopulation}
-          setMinPopulation={setMinPopulation}
-          isDark={isDark}
-        />
-
-        <div style={styles.sortGroup}>
-          <span>Сортувати за:</span>
-          <button style={styles.button(sortKey === 'name')} onClick={() => onSort('name')}>
-            Назва {getSortIcon('name')}
-          </button>
-          <button style={styles.button(sortKey === 'population')} onClick={() => onSort('population')}>
-            Населення {getSortIcon('population')}
-          </button>
-          <button style={styles.button(sortKey === 'area')} onClick={() => onSort('area')}>
-            Площа {getSortIcon('area')}
-          </button>
-        </div>
-      </section>
-
-      {/* Умовний рендеринг станів (loading, error, empty, data) */}
+      {/* Головний контент та обробка станів loading / error / empty */}
       <main>
         {isLoading && (
           <div style={styles.statusBox}>
-            ⏳ Завантаження даних з API... Зачекайте будь ласка.
+            ⏳ Завантаження даних... Зачекайте, будь ласка.
           </div>
         )}
 
@@ -171,8 +127,8 @@ export default function DashboardView({
                   <td style={styles.thTd}>{country.name}</td>
                   <td style={styles.thTd}>{country.capital}</td>
                   <td style={styles.thTd}>{country.region}</td>
-                  <td style={styles.thTd}>{country.population.toLocaleString()}</td>
-                  <td style={styles.thTd}>{country.area.toLocaleString()}</td>
+                  <td style={styles.thTd}>{(country.population ?? 0).toLocaleString()}</td>
+                  <td style={styles.thTd}>{(country.area ?? 0).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
