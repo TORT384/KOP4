@@ -1,19 +1,20 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import KpiCard from './KpiCard';
 import ThemeToggle from './ThemeToggle';
 import FilterPanel from './FilterPanel';
+import { useTheme } from '../context/ThemeContext';
 
 export default function DashboardView({
-  isDark,
-  theme,
-  setTheme,
   isLoading = false,
   error = null,
   kpis = [],
   countries = [],
-  initialFilters,
-  onFilterChange,
 }) {
+  const { isDark } = useTheme();
+  // Ініціалізуємо хук навігації
+  const navigate = useNavigate();
+
   const styles = {
     container: {
       padding: '24px',
@@ -25,7 +26,7 @@ export default function DashboardView({
     },
     header: {
       display: 'flex',
-      justifyContent: 'space-between', // Виправлено значення
+      justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: '24px',
     },
@@ -49,6 +50,10 @@ export default function DashboardView({
       textAlign: 'left',
       borderBottom: isDark ? '1px solid #444' : '1px solid #eee',
     },
+    tr: {
+      cursor: 'pointer',
+      transition: 'background-color 0.15s ease',
+    },
     statusBox: {
       padding: '32px',
       textAlign: 'center',
@@ -63,32 +68,25 @@ export default function DashboardView({
     <div style={styles.container}>
       <header style={styles.header}>
         <h1>Країни — Панель керування</h1>
-        <ThemeToggle theme={theme} setTheme={setTheme} />
+        <ThemeToggle />
       </header>
 
-      {/* Панель фільтрів */}
-      <FilterPanel
-        initialValues={initialFilters}
-        onFilterChange={onFilterChange}
-        isDark={isDark}
-      />
+      <FilterPanel />
 
-      {/* Динамічні KPI */}
       <section style={styles.kpiGrid}>
         {isLoading ? (
           [1, 2, 3].map((id) => (
-            <KpiCard key={id} title="Завантаження..." value="..." isDark={isDark} />
+            <KpiCard key={id} title="Завантаження..." value="..." />
           ))
         ) : kpis.length > 0 ? (
           kpis.map((kpi) => (
-            <KpiCard key={kpi.id || kpi.title} title={kpi.title} value={kpi.value} isDark={isDark} />
+            <KpiCard key={kpi.id || kpi.title} title={kpi.title} value={kpi.value} />
           ))
         ) : (
-          <KpiCard title="Знайдено країн" value="0" isDark={isDark} />
+          <KpiCard title="Знайдено країн" value="0" />
         )}
       </section>
 
-      {/* Головний контент та обробка станів loading / error / empty */}
       <main>
         {isLoading && (
           <div style={styles.statusBox}>
@@ -122,7 +120,12 @@ export default function DashboardView({
             </thead>
             <tbody>
               {countries.map((country) => (
-                <tr key={country.id}>
+                <tr 
+                  key={country.id} 
+                  style={styles.tr}
+                  /* Використання useNavigate для дрілдаун-переходу */
+                  onClick={() => navigate(`/country/${country.id}`)}
+                >
                   <td style={styles.thTd}><strong>{country.id}</strong></td>
                   <td style={styles.thTd}>{country.name}</td>
                   <td style={styles.thTd}>{country.capital}</td>

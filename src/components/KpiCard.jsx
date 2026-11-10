@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 
-export default function KpiCard({ title, value, isDark }) {
+export default function KpiCard({ title, value }) {
+  const { isDark } = useTheme();
+
   const cardStyle = {
     padding: '16px',
     borderRadius: '8px',

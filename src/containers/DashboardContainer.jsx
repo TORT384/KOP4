@@ -1,30 +1,15 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import DashboardView from '../components/DashboardView';
 import useFetchCountries from '../hooks/useFetchCountries';
 import useDebounce from '../hooks/useDebounce';
+import { useFilter } from '../context/FilterContext';
 
-const INITIAL_FILTERS = {
-  search: '',
-  minPopulation: 0,
-  sortKey: 'name',
-  sortOrder: 'asc',
-};
-
-export default function DashboardContainer({ isDark, theme, setTheme }) {
-  // 1. Власний хук завантаження даних
+export default function DashboardContainer() {
   const { data: rawCountries, loading, error } = useFetchCountries();
+  const { filters } = useFilter();
 
-  // 2. Стан фільтрів із форми
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
-
-  // 3. Власний хук дебаунсу для запиту/вибірки (400 мс)
   const debouncedFilters = useDebounce(filters, 400);
 
-  const handleFilterChange = useCallback((newFilters) => {
-    setFilters(newFilters);
-  }, []);
-
-  // Обчислення фільтрованого та відсортованого списку
   const processedCountries = useMemo(() => {
     if (!rawCountries || rawCountries.length === 0) return [];
 
@@ -51,7 +36,6 @@ export default function DashboardContainer({ isDark, theme, setTheme }) {
       });
   }, [rawCountries, debouncedFilters]);
 
-  // Динамічний перерахунок KPI на основі відфільтрованої вибірки
   const kpis = useMemo(() => {
     if (processedCountries.length === 0) return [];
 
@@ -78,15 +62,10 @@ export default function DashboardContainer({ isDark, theme, setTheme }) {
 
   return (
     <DashboardView
-      isDark={isDark}
-      theme={theme}
-      setTheme={setTheme}
       isLoading={loading}
       error={error}
       kpis={kpis}
       countries={processedCountries}
-      initialFilters={INITIAL_FILTERS}
-      onFilterChange={handleFilterChange}
     />
   );
 }

@@ -1,34 +1,26 @@
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useFilter } from '../context/FilterContext';
+import { useTheme } from '../context/ThemeContext';
 
-export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
+export default function FilterPanel() {
+  const { filters, setFilters, INITIAL_FILTERS } = useFilter();
+  const { isDark } = useTheme();
+
   const { control, reset, watch } = useForm({
-    defaultValues: initialValues || {
-      search: '',
-      minPopulation: 0,
-      sortKey: 'name',
-      sortOrder: 'asc',
-    },
+    defaultValues: filters,
   });
 
-  // Відслідковуємо зміни полів і передаємо їх у батьківський компонент
   useEffect(() => {
     const subscription = watch((values) => {
-      onFilterChange(values);
+      setFilters(values);
     });
     return () => subscription.unsubscribe();
-  }, [watch, onFilterChange]);
+  }, [watch, setFilters]);
 
-  // Кнопка скидання фільтрів
   const handleReset = () => {
-    const defaults = initialValues || {
-      search: '',
-      minPopulation: 0,
-      sortKey: 'name',
-      sortOrder: 'asc',
-    };
-    reset(defaults);
-    onFilterChange(defaults);
+    reset(INITIAL_FILTERS);
+    setFilters(INITIAL_FILTERS);
   };
 
   const styles = {
@@ -37,7 +29,7 @@ export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
       flexWrap: 'wrap',
       gap: '16px',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justify: 'space-between',
       padding: '16px',
       backgroundColor: isDark ? '#2a2a2a' : '#ffffff',
       borderRadius: '8px',
@@ -74,7 +66,6 @@ export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
 
   return (
     <div style={styles.panel}>
-      {/* 1. Полю пошуку за назвою */}
       <div style={styles.group}>
         <label style={styles.label}>Пошук за назвою:</label>
         <Controller
@@ -91,7 +82,6 @@ export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
         />
       </div>
 
-      {/* 2. Поле мінімального населення */}
       <div style={styles.group}>
         <label style={styles.label}>Мін. населення:</label>
         <Controller
@@ -110,7 +100,6 @@ export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
         />
       </div>
 
-      {/* 3. Поле критерію сортування */}
       <div style={styles.group}>
         <label style={styles.label}>Сортувати за:</label>
         <Controller
@@ -126,7 +115,6 @@ export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
         />
       </div>
 
-      {/* 4. Поле порядку сортування */}
       <div style={styles.group}>
         <label style={styles.label}>Порядок:</label>
         <Controller
@@ -141,7 +129,6 @@ export default function FilterPanel({ initialValues, onFilterChange, isDark }) {
         />
       </div>
 
-      {/* 5. Кнопка «Скинути фільтри» */}
       <button type="button" onClick={handleReset} style={styles.resetBtn}>
         Скинути фільтри
       </button>
